@@ -1,0 +1,13 @@
+services:
+  jarvis:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      PORT: 8787
+      NODE_ENV: production
+      DATA_FILE: ./data/db.local.json
+    volumes:
+      - jarvis-data:/app/data
+volumes:
+  jarvis-data:

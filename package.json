@@ -1,0 +1,24 @@
+{
+  "name": "jarvis-personal-ai-os",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @jarvis/api\" \"npm run dev -w @jarvis/web\"",
+    "build": "npm run build -w @jarvis/web",
+    "start": "npm run start -w @jarvis/api",
+    "check": "node --check apps/api/src/server.js && node --check apps/api/src/orchestrator.js && node --check apps/api/src/paymentGuard.js && node --check apps/api/src/store.js && node --check apps/api/src/providers.js",
+    "mobile": "npm run start -w @jarvis/mobile",
+    "mobile:android": "npm run android -w @jarvis/mobile",
+    "mobile:ios": "npm run ios -w @jarvis/mobile",
+    "predeploy": "node scripts/predeploy-check.mjs && npm run check"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

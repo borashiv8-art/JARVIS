@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jarvis — Interactive Demo</title>
+<style>
+:root{
+  --bg:#07111f; --panel:#0c1a2b; --panel2:#102238; --text:#f5f8fc; --muted:#91a4ba;
+  --line:#20364d; --accent:#6ec1ff; --accent2:#9ee7ff; --good:#57d69b; --warn:#ffcf70;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#06101c,#091729 45%,#07111f);color:var(--text)}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;display:grid;grid-template-columns:240px 1fr}
+.sidebar{border-right:1px solid var(--line);padding:22px 16px;background:rgba(7,17,31,.88);backdrop-filter:blur(10px)}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:28px}
+.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#326cff);display:grid;place-items:center;font-weight:900;color:#04101c;box-shadow:0 0 36px rgba(110,193,255,.24)}
+.brand b{display:block;letter-spacing:.12em}.brand small{color:var(--muted)}
+.nav{display:grid;gap:6px}
+.nav button{border:0;background:transparent;color:#b9c7d7;padding:12px 14px;text-align:left;border-radius:11px;display:flex;gap:10px;align-items:center}
+.nav button.active,.nav button:hover{background:#102238;color:white}
+.sidecard{margin-top:24px;border:1px solid var(--line);background:#0d1b2b;border-radius:14px;padding:14px;color:var(--muted);font-size:13px;line-height:1.5}
+.sidecard b{color:white}
+.main{min-width:0}
+.topbar{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(8,19,33,.66);backdrop-filter:blur(8px)}
+.search{flex:1;max-width:660px;background:#0d1b2b;border:1px solid var(--line);border-radius:13px;padding:13px 15px;color:white}
+.profile{display:flex;gap:10px;align-items:center}
+.avatar{width:38px;height:38px;border-radius:50%;background:#173653;display:grid;place-items:center;font-weight:700}
+.content{padding:26px;max-width:1440px;margin:auto}
+.hero{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:22px}
+.hero h1{font-size:30px;margin:0 0 6px}.hero p{margin:0;color:var(--muted)}
+.badge{border:1px solid #275375;background:#0b2035;color:#bfe9ff;padding:10px 12px;border-radius:999px;font-size:13px}
+.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+.card{background:linear-gradient(180deg,#0c1b2d,#0b1727);border:1px solid var(--line);border-radius:17px;overflow:hidden}
+.cardhead{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.cardhead b{font-size:15px}.small{font-size:12px;color:var(--muted)}
+.chat{height:410px;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:82%;padding:12px 14px;border-radius:14px;line-height:1.45;font-size:14px}
+.ai{background:#10253a;border:1px solid #1b405f;align-self:flex-start}
+.me{background:#1c4f76;align-self:flex-end}
+.composer{padding:14px;border-top:1px solid var(--line);display:flex;gap:10px}
+.composer input{flex:1;background:#0a1624;border:1px solid var(--line);color:white;border-radius:12px;padding:12px}
+.primary{border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),#4d8dff);color:#07111f;font-weight:800;padding:0 18px}
+.quick{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
+.qbtn{border:1px solid var(--line);background:#0f2033;color:white;padding:14px;border-radius:13px;text-align:left}
+.qbtn span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+.panel{padding:16px}
+.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:14px;background:#0e1c2c}
+.stat strong{font-size:24px;display:block}.stat span{font-size:12px;color:var(--muted)}
+.connected{display:grid;gap:9px;margin-top:10px}
+.conn{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);background:#0d1b2a;padding:11px 12px;border-radius:12px}
+.conn em{font-style:normal;color:var(--good);font-size:12px}
+.results{margin-top:18px;display:none}
+.results.show{display:block}
+.resulthead{display:flex;justify-content:space-between;align-items:end;margin-bottom:10px}
+.resulthead h2{font-size:19px;margin:0}.resulthead small{color:var(--muted)}
+.resultlist{display:grid;gap:10px}
+.item{border:1px solid var(--line);background:#0b1928;border-radius:14px;padding:14px;display:grid;grid-template-columns:1fr auto;gap:12px}
+.item.best{border-color:#397fae;box-shadow:0 0 0 1px rgba(110,193,255,.1) inset}
+.item h3{margin:0 0 5px;font-size:15px}.meta{font-size:13px;color:var(--muted);line-height:1.45}
+.price{text-align:right}.price strong{font-size:20px;display:block}.tag{display:inline-block;margin-top:5px;padding:5px 8px;border-radius:999px;background:#113452;color:#b9e7ff;font-size:11px}
+.recommend{margin-top:12px;border:1px solid #2f7559;background:#0f2a22;border-radius:14px;padding:14px;color:#d7ffeb}
+.recommend b{color:#79e3ac}
+.approve{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.approve button{border:1px solid var(--line);background:#102238;color:white;border-radius:10px;padding:10px 12px}
+.approve .ok{background:#1d6a4a;border-color:#2a9167}
+.demo-note{margin-top:18px;color:#8ba2b7;font-size:12px;line-height:1.5}
+.tabtitle{margin:0 0 10px;font-size:14px;color:#bed0e3}
+@media(max-width:960px){.app{grid-template-columns:76px 1fr}.sidebar{padding:18px 10px}.brand .txt,.nav .label,.sidecard{display:none}.brand{justify-content:center}.nav button{justify-content:center}.grid{grid-template-columns:1fr}}
+@media(max-width:640px){.app{display:block}.sidebar{display:none}.topbar{padding:0 14px}.content{padding:16px}.hero{flex-direction:column}.quick{grid-template-columns:1fr}.chat{height:330px}.item{grid-template-columns:1fr}.price{text-align:left}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">J</div>
+      <div class="txt"><b>JARVIS</b><small>Personal AI OS</small></div>
+    </div>
+    <div class="nav" id="nav">
+      <button class="active" data-view="home">⌂ <span class="label">Home</span></button>
+      <button data-view="connections">◉ <span class="label">Connected Apps</span></button>
+      <button data-view="approvals">✓ <span class="label">Approvals</span></button>
+      <button data-view="activity">↻ <span class="label">Activity</span></button>
+      <button data-view="settings">⚙ <span class="label">Settings</span></button>
+    </div>
+    <div class="sidecard"><b>Demo mode</b><br>This review build simulates live provider results so you can approve the experience before backend integrations are built.</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <input class="search" id="topSearch" placeholder="Tell Jarvis what you want — job, cab, flight, movie, shopping..." />
+      <div class="profile"><span class="small">Shiv</span><div class="avatar">S</div></div>
+    </div>
+
+    <div class="content">
+      <div class="hero">
+        <div><h1>Good evening, Shiv.</h1><p>Tell me the outcome. I’ll decide which connected platforms to use.</p></div>
+        <div class="badge">● Autonomous comparison demo</div>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <div class="cardhead"><b>Jarvis</b><span class="small">One assistant • many providers</span></div>
+          <div class="chat" id="chat">
+            <div class="msg ai">I’m ready. Try: <b>“Find the best cab to the airport”</b>, <b>“Find HR leadership jobs”</b>, <b>“Find a flight to Delhi”</b>, or <b>“Find a movie tonight.”</b></div>
+          </div>
+          <div class="composer">
+            <input id="chatInput" placeholder="Ask Jarvis..." />
+            <button class="primary" id="sendBtn">Send</button>
+          </div>
+        </section>
+
+        <aside class="card">
+          <div class="cardhead"><b>Quick demo</b><span class="small">Click to simulate</span></div>
+          <div class="quick">
+            <button class="qbtn" data-demo="jobs">💼 Find jobs<span>Search multiple job portals</span></button>
+            <button class="qbtn" data-demo="cab">🚕 Book a cab<span>Compare cab aggregators</span></button>
+            <button class="qbtn" data-demo="travel">✈️ Find a flight<span>Compare travel providers</span></button>
+            <button class="qbtn" data-demo="movie">🎬 Find a movie<span>Compare showtimes & offers</span></button>
+            <button class="qbtn" data-demo="shopping">🛍 Compare a product<span>Compare stores & delivery</span></button>
+            <button class="qbtn" data-demo="food">🍽 Order food<span>Compare price & ETA</span></button>
+          </div>
+          <div class="panel">
+            <div class="tabtitle">Connected providers</div>
+            <div class="connected">
+              <div class="conn"><span>LinkedIn / Naukri</span><em>Ready to connect</em></div>
+              <div class="conn"><span>Uber / Ola / Rapido</span><em>Ready to connect</em></div>
+              <div class="conn"><span>Travel / Movies / Shopping</span><em>Ready to connect</em></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <section class="results" id="results">
+        <div class="resulthead">
+          <div><h2 id="resultsTitle">Comparison</h2><small id="resultsSub">Jarvis checked multiple sources</small></div>
+          <span class="small">Demo results</span>
+        </div>
+        <div class="resultlist" id="resultList"></div>
+        <div class="recommend" id="recommend"></div>
+        <div class="approve">
+          <button class="ok" id="approveBtn">Approve recommended action</button>
+          <button id="changeBtn">Choose another</button>
+          <button id="cancelBtn">Cancel</button>
+        </div>
+        <div class="demo-note">This review version uses simulated data only. In production, each provider will be connected through its permitted API/OAuth/deep-link/session flow. Jarvis will never claim a provider was searched or booked unless that connector is actually live.</div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+const demos = {
+ jobs:{
+  title:"Best job matches for you",
+  sub:"Simulated search across LinkedIn, Naukri, company careers and other supported sources",
+  rec:"Jarvis recommends <b>Head of Talent Acquisition — 94% fit</b>. Strongest alignment with recruitment leadership, scaling, HR technology and vendor governance.",
+  items:[
+   ["LinkedIn","Head of Talent Acquisition — Fintech","Bengaluru • 15+ yrs • Leadership","94% match","BEST MATCH"],
+   ["Naukri","Talent Acquisition Lead — SaaS","Bengaluru • Hybrid","91% match",""],
+   ["Company Careers","Head of People — Technology","Bengaluru • Senior leadership","89% match",""]
+  ]
+ },
+ cab:{
+  title:"Best cab options",
+  sub:"Simulated comparison across Uber, Ola and Rapido",
+  rec:"Jarvis recommends <b>Rapido Cab Economy — ₹438</b>. It is the cheapest comparable option and is only about 1 minute slower than Uber.",
+  items:[
+   ["Rapido","Cab Economy","ETA 4 min • AC","₹438","BEST VALUE"],
+   ["Ola","Mini","ETA 6 min • AC","₹449",""],
+   ["Uber","Go","ETA 3 min • AC","₹462","FASTEST"]
+  ]
+ },
+ travel:{
+  title:"Best flight options",
+  sub:"Simulated comparison across airline-direct and travel platforms",
+  rec:"Jarvis recommends <b>Cleartrip — ₹5,420 effective price</b> after the matching card offer. Airline direct is ₹170 more but may have simpler change handling.",
+  items:[
+   ["Cleartrip","BLR → DEL • 18:40","Non-stop • 2h 45m","₹5,420","BEST PRICE"],
+   ["MakeMyTrip","BLR → DEL • 19:10","Non-stop • 2h 50m","₹5,510",""],
+   ["Airline Direct","BLR → DEL • 18:40","Same flight • direct booking","₹5,590","DIRECT"]
+  ]
+ },
+ movie:{
+  title:"Best movie options tonight",
+  sub:"Simulated comparison across ticketing platforms",
+  rec:"Jarvis recommends <b>BookMyShow at 7:40 PM — ₹520 effective total</b> because the demo profile has a matching card offer.",
+  items:[
+   ["BookMyShow","7:40 PM • PVR","2 seats • matching card offer","₹520","BEST VALUE"],
+   ["District","7:50 PM • PVR","2 seats • no matching offer","₹610",""],
+   ["BookMyShow","8:20 PM • INOX","2 seats","₹560",""]
+  ]
+ },
+ shopping:{
+  title:"Best product options",
+  sub:"Simulated comparison across major stores",
+  rec:"Jarvis recommends <b>Store B — ₹8,699 delivered tomorrow</b>. It is ₹300 cheaper than Store A after the eligible offer.",
+  items:[
+   ["Store B","Same product • verified seller","Delivery tomorrow","₹8,699","BEST VALUE"],
+   ["Store A","Same product • verified seller","Delivery today","₹8,999","FASTEST"],
+   ["Brand Store","Official store","Delivery in 2 days","₹9,299","OFFICIAL"]
+  ]
+ },
+ food:{
+  title:"Best food ordering options",
+  sub:"Simulated comparison across delivery providers and restaurant-direct ordering",
+  rec:"Jarvis recommends <b>Provider A — ₹642 total</b>. Same restaurant and basket, lower final total after delivery fee and offer.",
+  items:[
+   ["Provider A","Same restaurant • same basket","ETA 31 min","₹642","BEST VALUE"],
+   ["Provider B","Same restaurant • same basket","ETA 27 min","₹689","FASTEST"],
+   ["Restaurant Direct","Same basket","ETA 38 min","₹660","DIRECT"]
+  ]
+ }
+};
+
+const chat = document.getElementById("chat");
+const input = document.getElementById("chatInput");
+const topSearch = document.getElementById("topSearch");
+const results = document.getElementById("results");
+const resultList = document.getElementById("resultList");
+const title = document.getElementById("resultsTitle");
+const sub = document.getElementById("resultsSub");
+const recommend = document.getElementById("recommend");
+
+function addMsg(text, who="me"){
+  const d=document.createElement("div"); d.className="msg "+who; d.innerHTML=text; chat.appendChild(d); chat.scrollTop=chat.scrollHeight;
+}
+function runDemo(key){
+  const d=demos[key]; if(!d)return;
+  addMsg(
+    key==="cab" ? "Book me the best cab to the airport." :
+    key==="jobs" ? "Find the best jobs for me." :
+    key==="travel" ? "Find the best flight option." :
+    key==="movie" ? "Find the best movie option tonight." :
+    key==="shopping" ? "Compare this product for me." :
+    "Find the best food order option."
+  );
+  addMsg("I’ll check the relevant connected providers, normalize comparable options, and rank them for you.","ai");
+  title.textContent=d.title; sub.textContent=d.sub; resultList.innerHTML="";
+  d.items.forEach((it,i)=>{
+    const el=document.createElement("div"); el.className="item"+(i===0?" best":"");
+    el.innerHTML=`<div><h3>${it[0]} — ${it[1]}</h3><div class="meta">${it[2]}</div>${it[4]?`<span class="tag">${it[4]}</span>`:""}</div><div class="price"><strong>${it[3]}</strong><span class="small">normalized result</span></div>`;
+    resultList.appendChild(el);
+  });
+  recommend.innerHTML=d.rec;
+  results.classList.add("show");
+  results.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function infer(t){
+ const s=t.toLowerCase();
+ if(s.includes("cab")||s.includes("uber")||s.includes("ola")||s.includes("rapido")) return "cab";
+ if(s.includes("job")||s.includes("career")||s.includes("linkedin")||s.includes("naukri")) return "jobs";
+ if(s.includes("flight")||s.includes("travel")||s.includes("hotel")) return "travel";
+ if(s.includes("movie")||s.includes("ticket")||s.includes("bookmyshow")||s.includes("district")) return "movie";
+ if(s.includes("shop")||s.includes("buy")||s.includes("product")) return "shopping";
+ if(s.includes("food")||s.includes("order")||s.includes("restaurant")) return "food";
+ return null;
+}
+function send(){
+ const t=input.value.trim()||topSearch.value.trim(); if(!t)return;
+ input.value=""; topSearch.value="";
+ const k=infer(t);
+ if(k){ addMsg(t); setTimeout(()=>runDemo(k),180); }
+ else { addMsg(t); addMsg("In the production version I would identify the intent, decide which connected providers can help, compare them and return the best action. For this demo, try jobs, cab, flight, movie, shopping or food.","ai");}
+}
+document.getElementById("sendBtn").addEventListener("click",send);
+input.addEventListener("keydown",e=>{if(e.key==="Enter")send()});
+topSearch.addEventListener("keydown",e=>{if(e.key==="Enter")send()});
+document.querySelectorAll("[data-demo]").forEach(b=>b.addEventListener("click",()=>runDemo(b.dataset.demo)));
+document.getElementById("approveBtn").addEventListener("click",()=>addMsg("Approved. In the real build, Jarvis would now execute through the selected provider connector and track the outcome.","ai"));
+document.getElementById("changeBtn").addEventListener("click",()=>addMsg("Sure — choose any other option from the comparison list. In production, Jarvis can also re-rank based on price, ETA, convenience or your preferences.","ai"));
+document.getElementById("cancelBtn").addEventListener("click",()=>{results.classList.remove("show");addMsg("Cancelled. No external action taken.","ai")});
+document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>{
+ document.querySelectorAll("#nav button").forEach(x=>x.classList.remove("active")); b.classList.add("active");
+ const v=b.dataset.view;
+ if(v!=="home") addMsg(`<b>${b.innerText.trim()}</b> is represented in this review build. The production version will use this area for ${v==="connections"?"OAuth/API connections and permissions":v==="approvals"?"pending actions before execution":v==="activity"?"Jarvis activity and audit history":"preferences, privacy and automation rules"}.`,"ai");
+}));
+</script>
+</body>
+</html>

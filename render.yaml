@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: jarvis-ai-os
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    disk:
+      name: jarvis-data
+      mountPath: /var/data
+      sizeGB: 5
+    envVars:
+      - key: PORT
+        value: 8787
+      - key: NODE_ENV
+        value: production
+      - key: DATA_FILE
+        value: /var/data/db.json
